@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WPA Replay Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #12171f;
+    --surface-alt: #181e28;
+    --border: #252d3a;
+    --text: #c8cdd5;
+    --text-muted: #6b7585;
+    --accent: #e8c547;
+    --accent-dim: #c4a32e;
+    --highlight: #ff5c5c;
+    --positive: #3ddc84;
+    --blue: #4da6ff;
+    --rank-1: #e8c547;
+    --rank-2: #b0b8c4;
+    --rank-3: #c47a3e;
+  }
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+font-family: ‘Source Sans 3’, sans-serif;
+background: var(–bg);
+color: var(–text);
+min-height: 100vh;
+}
+
+.container {
+max-width: 860px;
+margin: 0 auto;
+padding: 2rem 1.5rem;
+}
+
+/* Header */
+.header {
+text-align: center;
+margin-bottom: 2.5rem;
+}
+
+.header-badge {
+display: inline-block;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+color: var(–accent);
+border: 1px solid var(–accent-dim);
+padding: 0.25rem 0.75rem;
+border-radius: 2px;
+margin-bottom: 0.75rem;
+}
+
+h1 {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 3rem;
+letter-spacing: 0.04em;
+color: #fff;
+line-height: 1;
+margin-bottom: 0.35rem;
+}
+
+h1 span { color: var(–accent); }
+
+.subtitle {
+color: var(–text-muted);
+font-size: 0.95rem;
+}
+
+/* Input area */
+.input-section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 1.5rem;
+margin-bottom: 2rem;
+}
+
+.input-row {
+display: flex;
+gap: 0.75rem;
+align-items: flex-end;
+}
+
+.input-group {
+flex: 1;
+}
+
+.input-group label {
+display: block;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.7rem;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: var(–text-muted);
+margin-bottom: 0.4rem;
+}
+
+.input-group input {
+width: 100%;
+padding: 0.6rem 0.85rem;
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 4px;
+color: #fff;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.9rem;
+outline: none;
+transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+border-color: var(–accent);
+}
+
+.input-group input::placeholder {
+color: var(–text-muted);
+opacity: 0.6;
+}
+
+.btn {
+padding: 0.6rem 1.5rem;
+background: var(–accent);
+color: var(–bg);
+border: none;
+border-radius: 4px;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.1rem;
+letter-spacing: 0.06em;
+cursor: pointer;
+transition: background 0.2s, transform 0.1s;
+white-space: nowrap;
+}
+
+.btn:hover { background: #f0d05a; }
+.btn:active { transform: scale(0.97); }
+.btn:disabled {
+background: var(–border);
+color: var(–text-muted);
+cursor: not-allowed;
+}
+
+.helper-text {
+margin-top: 0.75rem;
+font-size: 0.8rem;
+color: var(–text-muted);
+line-height: 1.5;
+}
+
+.helper-text code {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.75rem;
+background: var(–bg);
+padding: 0.1rem 0.35rem;
+border-radius: 3px;
+color: var(–blue);
+}
+
+/* Loading */
+.loading {
+text-align: center;
+padding: 3rem 0;
+display: none;
+}
+
+.loading.active { display: block; }
+
+.spinner {
+width: 32px;
+height: 32px;
+border: 3px solid var(–border);
+border-top-color: var(–accent);
+border-radius: 50%;
+margin: 0 auto 1rem;
+animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+font-size: 0.85rem;
+color: var(–text-muted);
+}
+
+/* Error */
+.error-msg {
+background: rgba(255, 92, 92, 0.08);
+border: 1px solid rgba(255, 92, 92, 0.25);
+border-radius: 6px;
+padding: 1rem 1.25rem;
+color: var(–highlight);
+font-size: 0.9rem;
+margin-bottom: 1.5rem;
+display: none;
+}
+
+.error-msg.active { display: block; }
+
+/* Game header */
+.game-header {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 1.25rem 1.5rem;
+margin-bottom: 1.5rem;
+display: none;
+}
+
+.game-header.active { display: block; }
+
+.game-matchup {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.6rem;
+color: #fff;
+letter-spacing: 0.03em;
+margin-bottom: 0.2rem;
+}
+
+.game-meta {
+font-size: 0.8rem;
+color: var(–text-muted);
+font-family: ‘JetBrains Mono’, monospace;
+}
+
+.game-score {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.3rem;
+color: var(–accent);
+margin-top: 0.25rem;
+}
+
+/* WPA chart */
+.wpa-chart-section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 1.25rem 1.5rem;
+margin-bottom: 1.5rem;
+display: none;
+}
+
+.wpa-chart-section.active { display: block; }
+
+.section-label {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–text-muted);
+margin-bottom: 0.75rem;
+}
+
+.wpa-chart {
+width: 100%;
+height: 180px;
+}
+
+/* Results */
+.results { display: none; }
+.results.active { display: block; }
+
+.results-label {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–text-muted);
+margin-bottom: 1rem;
+}
+
+.half-inning-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 1.25rem 1.5rem;
+margin-bottom: 0.75rem;
+position: relative;
+overflow: hidden;
+transition: border-color 0.2s;
+animation: slideIn 0.4s ease-out both;
+}
+
+.half-inning-card:hover { border-color: var(–accent-dim); }
+
+@keyframes slideIn {
+from { opacity: 0; transform: translateY(12px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.half-inning-card:nth-child(1) { animation-delay: 0.05s; }
+.half-inning-card:nth-child(2) { animation-delay: 0.1s; }
+.half-inning-card:nth-child(3) { animation-delay: 0.15s; }
+.half-inning-card:nth-child(4) { animation-delay: 0.2s; }
+.half-inning-card:nth-child(5) { animation-delay: 0.25s; }
+.half-inning-card:nth-child(6) { animation-delay: 0.3s; }
+
+.card-rank {
+position: absolute;
+top: 0;
+right: 0;
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 3.5rem;
+line-height: 1;
+opacity: 0.07;
+padding: 0.1rem 0.5rem;
+color: #fff;
+}
+
+.card-top-row {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+margin-bottom: 0.65rem;
+}
+
+.rank-badge {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 0.95rem;
+width: 28px;
+height: 28px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 4px;
+flex-shrink: 0;
+}
+
+.rank-1 { background: var(–rank-1); color: var(–bg); }
+.rank-2 { background: var(–rank-2); color: var(–bg); }
+.rank-3 { background: var(–rank-3); color: var(–bg); }
+.rank-4, .rank-5, .rank-6 { background: var(–border); color: var(–text); }
+
+.card-inning-label {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 1.3rem;
+color: #fff;
+letter-spacing: 0.03em;
+}
+
+.card-team {
+font-size: 0.8rem;
+color: var(–text-muted);
+margin-left: auto;
+font-family: ‘JetBrains Mono’, monospace;
+}
+
+.card-stats {
+display: flex;
+gap: 1.25rem;
+flex-wrap: wrap;
+margin-bottom: 0.65rem;
+}
+
+.stat-block {
+display: flex;
+flex-direction: column;
+gap: 0.1rem;
+}
+
+.stat-value {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 1rem;
+font-weight: 700;
+color: #fff;
+}
+
+.stat-value.wpa-positive { color: var(–positive); }
+.stat-value.wpa-negative { color: var(–highlight); }
+.stat-value.wpa-accent { color: var(–accent); }
+
+.stat-label {
+font-size: 0.65rem;
+font-family: ‘JetBrains Mono’, monospace;
+letter-spacing: 0.08em;
+text-transform: uppercase;
+color: var(–text-muted);
+}
+
+.card-plays {
+border-top: 1px solid var(–border);
+padding-top: 0.65rem;
+margin-top: 0.25rem;
+}
+
+.card-plays-toggle {
+font-size: 0.78rem;
+color: var(–blue);
+cursor: pointer;
+background: none;
+border: none;
+font-family: ‘Source Sans 3’, sans-serif;
+padding: 0;
+}
+
+.card-plays-toggle:hover { text-decoration: underline; }
+
+.plays-list {
+display: none;
+margin-top: 0.5rem;
+}
+
+.plays-list.open { display: block; }
+
+.play-item {
+font-size: 0.8rem;
+color: var(–text);
+padding: 0.3rem 0;
+border-bottom: 1px solid rgba(255,255,255,0.03);
+display: flex;
+gap: 0.5rem;
+line-height: 1.4;
+}
+
+.play-item:last-child { border-bottom: none; }
+
+.play-wpa {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.72rem;
+flex-shrink: 0;
+width: 52px;
+text-align: right;
+}
+
+.play-wpa.pos { color: var(–positive); }
+.play-wpa.neg { color: var(–highlight); }
+
+.play-desc {
+color: var(–text-muted);
+}
+
+/* Watch time summary */
+.watch-summary {
+background: var(–surface-alt);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 1.25rem 1.5rem;
+margin-top: 1.5rem;
+text-align: center;
+display: none;
+}
+
+.watch-summary.active { display: block; }
+
+.watch-summary-title {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 0.65rem;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+color: var(–text-muted);
+margin-bottom: 0.5rem;
+}
+
+.watch-time {
+font-family: ‘Bebas Neue’, sans-serif;
+font-size: 2.2rem;
+color: var(–accent);
+}
+
+.watch-note {
+font-size: 0.8rem;
+color: var(–text-muted);
+margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+h1 { font-size: 2.2rem; }
+.input-row { flex-direction: column; }
+.btn { width: 100%; }
+.card-stats { gap: 0.75rem; }
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-badge">MLB Stats API</div>
+    <h1>WPA <span>Replay Guide</span></h1>
+    <div class="subtitle">Find the six most dramatic half-innings in any game</div>
+  </div>
+
+  <div class="input-section">
+    <div class="input-row">
+      <div class="input-group">
+        <label>Game PK (MLB Stats API ID)</label>
+        <input type="text" id="gamePkInput" placeholder="e.g. 748534" />
+      </div>
+      <button class="btn" id="analyzeBtn" onclick="analyzeGame()">Analyze</button>
+    </div>
+    <div class="helper-text">
+      Find a Game PK from <code>statsapi.mlb.com/api/v1/schedule?date=YYYY-MM-DD</code><br>
+      or from Baseball Savant / Baseball Reference game pages.
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Pulling play-by-play data…</div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="game-header" id="gameHeader">
+    <div class="game-matchup" id="gameMatchup"></div>
+    <div class="game-meta" id="gameMeta"></div>
+    <div class="game-score" id="gameScore"></div>
+  </div>
+
+  <div class="wpa-chart-section" id="chartSection">
+    <div class="section-label">Win Probability Over Game</div>
+    <canvas class="wpa-chart" id="wpaCanvas"></canvas>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-label">Top 6 Half-Innings by WPA — Chronological Order (badges show WPA rank)</div>
+    <div id="cardsContainer"></div>
+  </div>
+
+  <div class="watch-summary" id="watchSummary">
+    <div class="watch-summary-title">Estimated Watch Time (skip commercials)</div>
+    <div class="watch-time" id="watchTime"></div>
+    <div class="watch-note">~6–7 min per half-inning of actual play</div>
+  </div>
+
+</div>
+
+<script>
+async function analyzeGame() {
+  const gamePk = document.getElementById('gamePkInput').value.trim();
+  if (!gamePk) return;
+
+  const loading = document.getElementById('loading');
+  const errorMsg = document.getElementById('errorMsg');
+  const gameHeader = document.getElementById('gameHeader');
+  const chartSection = document.getElementById('chartSection');
+  const results = document.getElementById('results');
+  const watchSummary = document.getElementById('watchSummary');
+
+  // Reset
+  loading.classList.add('active');
+  errorMsg.classList.remove('active');
+  gameHeader.classList.remove('active');
+  chartSection.classList.remove('active');
+  results.classList.remove('active');
+  watchSummary.classList.remove('active');
+  document.getElementById('analyzeBtn').disabled = true;
+
+  try {
+    const url = `https://statsapi.mlb.com/api/v1.1/game/${gamePk}/feed/live`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`API returned ${resp.status}. Check your Game PK.`);
+    const data = await resp.json();
+
+    const gameData = data.gameData;
+    const liveData = data.liveData;
+    const plays = liveData.plays;
+
+    // Game info
+    const away = gameData.teams.away.name;
+    const home = gameData.teams.home.name;
+    const awayAbbr = gameData.teams.away.abbreviation;
+    const homeAbbr = gameData.teams.home.abbreviation;
+    const dateStr = gameData.datetime.officialDate || '';
+    const awayScore = liveData.linescore.teams.away.runs;
+    const homeScore = liveData.linescore.teams.home.runs;
+
+    document.getElementById('gameMatchup').textContent = `${away} @ ${home}`;
+    document.getElementById('gameMeta').textContent = dateStr;
+    document.getElementById('gameScore').textContent = `Final: ${awayAbbr} ${awayScore} — ${homeAbbr} ${homeScore}`;
+    gameHeader.classList.add('active');
+
+    // Parse all plays with WPA
+    const allPlays = plays.allPlays || [];
+    const halfInnings = {};
+    const wpTimeline = []; // for chart
+
+    let runningWP = 0.5; // start at 50%
+    wpTimeline.push({ idx: 0, wp: 0.5, label: 'Start' });
+
+    let playIdx = 0;
+    for (const play of allPlays) {
+      const about = play.about || {};
+      const inning = about.inning;
+      const halfInning = about.halfInning; // 'top' or 'bottom'
+      if (!inning || !halfInning) continue;
+
+      const key = `${halfInning}_${inning}`;
+      if (!halfInnings[key]) {
+        halfInnings[key] = {
+          inning,
+          halfInning,
+          team: halfInning === 'top' ? awayAbbr : homeAbbr,
+          teamFull: halfInning === 'top' ? away : home,
+          totalWPA: 0,
+          absWPA: 0,
+          plays: [],
+          runs: 0,
+          hits: 0,
+          startWP: runningWP
+        };
+      }
+
+      // Get WPA from play result
+      const result = play.result || {};
+      const desc = result.description || '';
+      const rbi = result.rbi || 0;
+
+      // Try to pull home team win probability delta
+      // The API stores winProbability at play level in some feeds
+      // We'll look at the playEvents for WPA
+      let playWPA = 0;
+      const playEvents = play.playEvents || [];
+      
+      // Check if there's a WPA on the result
+      // In the live feed, about.atBatIndex and the probabilities
+      // are sometimes in plays.allPlays[].about
+      // The most reliable source is looking at the play result
+      
+      // Try getting from the play-level data
+      if (play.about && typeof play.about.homeWinProbabilityAdded !== 'undefined') {
+        playWPA = play.about.homeWinProbabilityAdded;
+      } else {
+        // Estimate from matchup data if available
+        // Some API versions store it differently
+        const matchup = play.matchup || {};
+        // Fallback: check the about.startWinProbability and endWinProbability
+        // Not always present, but let's try
+      }
+
+      // Alternative approach: reconstruct from context metrics
+      // The feed/live endpoint may not always have WPA directly
+      // Let's check for winProbability in the plays data
+      const lastEvent = playEvents.length > 0 ? playEvents[playEvents.length - 1] : null;
+      
+      // Some versions of the API include this at the play level
+      if (play.result && typeof play.result.homeWinProbabilityAdded !== 'undefined') {
+        playWPA = play.result.homeWinProbabilityAdded;
+      }
+
+      // Count runs and hits
+      const runners = play.runners || [];
+      let runsOnPlay = 0;
+      for (const runner of runners) {
+        if (runner.movement && runner.movement.end === 'score') {
+          runsOnPlay++;
+        }
+      }
+
+      const isHit = result.event && ['Single','Double','Triple','Home Run'].includes(result.event);
+
+      halfInnings[key].runs += runsOnPlay;
+      halfInnings[key].hits += isHit ? 1 : 0;
+
+      halfInnings[key].plays.push({
+        desc,
+        event: result.event || '',
+        wpa: playWPA,
+        rbi
+      });
+
+      halfInnings[key].totalWPA += playWPA;
+      halfInnings[key].absWPA += Math.abs(playWPA);
+
+      runningWP += playWPA;
+      playIdx++;
+      wpTimeline.push({
+        idx: playIdx,
+        wp: Math.max(0, Math.min(1, runningWP)),
+        label: `${halfInning === 'top' ? '▲' : '▼'}${inning}`
+      });
+    }
+
+    // If no WPA data found at all, use an alternative ranking
+    let hasWPA = Object.values(halfInnings).some(h => h.absWPA > 0);
+    
+    if (!hasWPA) {
+      // Fallback: try the win probability endpoint
+      try {
+        const wpUrl = `https://statsapi.mlb.com/api/v1/game/${gamePk}/winProbability`;
+        const wpResp = await fetch(wpUrl);
+        if (wpResp.ok) {
+          const wpData = await wpResp.json();
+          // wpData is an array of play entries with homeTeamWinProbability
+          // Reconstruct WPA per play
+          let prevWP = 0.5;
+          const wpTimelineAlt = [{ idx: 0, wp: 0.5 }];
+          let altIdx = 0;
+
+          // Reset halfInnings WPA
+          for (const key in halfInnings) {
+            halfInnings[key].totalWPA = 0;
+            halfInnings[key].absWPA = 0;
+            halfInnings[key].plays.forEach(p => p.wpa = 0);
+          }
+
+          for (const entry of wpData) {
+            const about = entry.about || {};
+            const inning = about.inning;
+            const halfInning = about.halfInning;
+            if (!inning || !halfInning) continue;
+
+            const key = `${halfInning}_${inning}`;
+            const currentWP = entry.homeTeamWinProbability;
+            if (typeof currentWP === 'undefined') continue;
+
+            const wpFrac = currentWP / 100;
+            const delta = wpFrac - prevWP;
+
+            if (halfInnings[key]) {
+              const atBatIdx = about.atBatIndex;
+              // Find matching play
+              const playMatch = halfInnings[key].plays.find((p, i) => {
+                // rough match by index
+                return true; // we'll just accumulate
+              });
+
+              halfInnings[key].totalWPA += delta;
+              halfInnings[key].absWPA += Math.abs(delta);
+            }
+
+            altIdx++;
+            wpTimeline.length = 0; // reset
+            prevWP = wpFrac;
+          }
+
+          // Rebuild timeline from wpData
+          wpTimeline.push({ idx: 0, wp: 0.5 });
+          let tIdx = 0;
+          for (const entry of wpData) {
+            if (typeof entry.homeTeamWinProbability !== 'undefined') {
+              tIdx++;
+              wpTimeline.push({
+                idx: tIdx,
+                wp: entry.homeTeamWinProbability / 100,
+                label: entry.about ? `${entry.about.halfInning === 'top' ? '▲' : '▼'}${entry.about.inning}` : ''
+              });
+            }
+          }
+
+          // Also update play-level WPA
+          let prevWP2 = 0.5;
+          for (const entry of wpData) {
+            const about = entry.about || {};
+            const key = `${about.halfInning}_${about.inning}`;
+            const currentWP = (entry.homeTeamWinProbability || 50) / 100;
+            const delta = currentWP - prevWP2;
+
+            if (halfInnings[key]) {
+              const atBatIndex = about.atBatIndex || 0;
+              // Map back to plays array by description match
+              const desc = entry.result?.description || '';
+              const matchPlay = halfInnings[key].plays.find(p => p.desc === desc && p.wpa === 0);
+              if (matchPlay) {
+                matchPlay.wpa = delta;
+              }
+            }
+            prevWP2 = currentWP;
+          }
+
+          hasWPA = Object.values(halfInnings).some(h => h.absWPA > 0);
+        }
+      } catch (e) {
+        console.log('Win probability endpoint not available', e);
+      }
+    }
+
+    // Select top 6 by WPA magnitude, then display chronologically
+    const byMagnitude = Object.values(halfInnings)
+      .sort((a, b) => {
+        if (hasWPA) return b.absWPA - a.absWPA;
+        // Fallback: sort by runs + hits
+        return (b.runs * 3 + b.hits) - (a.runs * 3 + a.hits);
+      })
+      .slice(0, 6);
+
+    // Assign WPA rank before re-sorting
+    byMagnitude.forEach((hi, idx) => { hi.wpaRank = idx + 1; });
+
+    // Re-sort chronologically for display
+    const ranked = byMagnitude.sort((a, b) => {
+      if (a.inning !== b.inning) return a.inning - b.inning;
+      // top before bottom within same inning
+      return a.halfInning === 'top' ? -1 : 1;
+    });
+
+    // Draw WPA chart
+    if (wpTimeline.length > 1) {
+      drawChart(wpTimeline, ranked, homeAbbr, awayAbbr);
+      chartSection.classList.add('active');
+    }
+
+    // Render cards
+    const container = document.getElementById('cardsContainer');
+    container.innerHTML = '';
+
+    ranked.forEach((hi, idx) => {
+      const halfLabel = hi.halfInning === 'top' ? 'Top' : 'Bottom';
+      const ordinal = getOrdinal(hi.inning);
+
+      const card = document.createElement('div');
+      card.className = 'half-inning-card';
+      card.style.animationDelay = `${idx * 0.06}s`;
+
+      const wpaDisplay = hasWPA ? (hi.absWPA * 100).toFixed(1) : '—';
+      const wpaNetDisplay = hasWPA ? (hi.totalWPA >= 0 ? '+' : '') + (hi.totalWPA * 100).toFixed(1) : '—';
+      const wpaClass = hi.totalWPA >= 0 ? 'wpa-positive' : 'wpa-negative';
+
+      let playsHtml = '';
+      const significantPlays = hi.plays.filter(p => p.desc);
+      for (const p of significantPlays) {
+        const wpaPct = hasWPA ? (p.wpa * 100).toFixed(1) : '';
+        const wClass = p.wpa >= 0 ? 'pos' : 'neg';
+        const wpaStr = hasWPA && p.wpa !== 0 ? `${p.wpa >= 0 ? '+' : ''}${wpaPct}%` : '';
+        playsHtml += `
+          <div class="play-item">
+            <span class="play-wpa ${wClass}">${wpaStr}</span>
+            <span class="play-desc">${escapeHtml(p.desc)}</span>
+          </div>`;
+      }
+
+      const playId = `plays_${idx}`;
+      const rank = hi.wpaRank;
+      card.innerHTML = `
+        <div class="card-rank">#${rank}</div>
+        <div class="card-top-row">
+          <div class="rank-badge rank-${rank}">${rank}</div>
+          <div class="card-inning-label">${halfLabel} ${ordinal}</div>
+          <div class="card-team">${hi.team} batting</div>
+        </div>
+        <div class="card-stats">
+          <div class="stat-block">
+            <div class="stat-value wpa-accent">${wpaDisplay}%</div>
+            <div class="stat-label">WPA Magnitude</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value ${wpaClass}">${wpaNetDisplay}%</div>
+            <div class="stat-label">Net WPA (Home)</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">${hi.runs}</div>
+            <div class="stat-label">Runs</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">${hi.hits}</div>
+            <div class="stat-label">Hits</div>
+          </div>
+        </div>
+        <div class="card-plays">
+          <button class="card-plays-toggle" onclick="togglePlays('${playId}', this)">Show plays ▾</button>
+          <div class="plays-list" id="${playId}">
+            ${playsHtml}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    results.classList.add('active');
+
+    // Watch time estimate
+    const mins = ranked.length * 7; // ~7 min per half-inning with ads, ~5 without
+    const minsNoAds = ranked.length * 5;
+    document.getElementById('watchTime').textContent = `${minsNoAds}–${mins} minutes`;
+    watchSummary.classList.add('active');
+
+  } catch (err) {
+    errorMsg.textContent = err.message;
+    errorMsg.classList.add('active');
+  } finally {
+    loading.classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+function drawChart(timeline, topHalfInnings, homeAbbr, awayAbbr) {
+  const canvas = document.getElementById('wpaCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = canvas.offsetWidth * dpr;
+  canvas.height = canvas.offsetHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+  const pad = { top: 20, right: 16, bottom: 24, left: 42 };
+  const plotW = w - pad.left - pad.right;
+  const plotH = h - pad.top - pad.bottom;
+
+  // Background
+  ctx.fillStyle = 'rgba(10, 14, 20, 0.4)';
+  ctx.fillRect(0, 0, w, h);
+
+  // 50% line
+  const y50 = pad.top + plotH * 0.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.left, y50);
+  ctx.lineTo(w - pad.right, y50);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Y-axis labels
+  ctx.fillStyle = '#6b7585';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${homeAbbr} 100%`, pad.left - 6, pad.top + 4);
+  ctx.fillText('50%', pad.left - 6, y50 + 4);
+  ctx.fillText(`${awayAbbr} 100%`, pad.left - 6, pad.top + plotH + 4);
+
+  // Draw WP line
+  if (timeline.length < 2) return;
+
+  const xStep = plotW / (timeline.length - 1);
+
+  // Highlight regions for top half-innings
+  const topKeys = new Set(topHalfInnings.slice(0, 3).map(h => `${h.halfInning}_${h.inning}`));
+
+  // Draw line
+  ctx.beginPath();
+  ctx.strokeStyle = '#e8c547';
+  ctx.lineWidth = 1.5;
+
+  for (let i = 0; i < timeline.length; i++) {
+    const x = pad.left + i * xStep;
+    const y = pad.top + (1 - timeline[i].wp) * plotH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Fill under/over 50%
+  ctx.beginPath();
+  for (let i = 0; i < timeline.length; i++) {
+    const x = pad.left + i * xStep;
+    const y = pad.top + (1 - timeline[i].wp) * plotH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.lineTo(pad.left + (timeline.length - 1) * xStep, y50);
+  ctx.lineTo(pad.left, y50);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(232, 197, 71, 0.06)';
+  ctx.fill();
+}
+
+function togglePlays(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.classList.toggle('open');
+  btn.textContent = open ? 'Hide plays ▴' : 'Show plays ▾';
+}
+
+function getOrdinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return n + (s[(v-20)%10] || s[v] || s[0]);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Allow Enter key
+document.getElementById('gamePkInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') analyzeGame();
+});
+</script>
+
+</body>
+</html>
